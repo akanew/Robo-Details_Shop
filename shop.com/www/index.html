@@ -1,0 +1,92 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+		<link rel="stylesheet" href="styles/style.css"  type="text/css">
+		<script type="text/javascript" src="scripts/jquery-1.10.2.min.js"></script>
+		<title>Панель администрирования</title>
+	</head>
+
+	<body>
+		<div id="MyDiv">
+
+			<div id="header">
+			</div>
+
+			<div id="menu">
+				<div id="header_nav">
+				
+					<ul>
+						<li><a href="#">Добавить клиента</a></li>
+						<li id="article_h1"><a href="#">Добавить товар</a>
+							<ul id="articles_1">
+								<li><a href="#">Новый товар</a></li>
+								<li><a href="#">Имеющийся товар</a></li>
+							</ul>
+						</li>
+
+						<li id="article_h2"><a href="#">Операци со складами</a>
+							<ul id="articles_2">
+								<li><a href="#">Новый склад</a></li>
+								<li><a href="#">Заказ для склада</a></li>
+							</ul>
+						</li>
+
+						<li id="article_h3"><a href="#">Установить скидки</a>
+							<ul id="articles_3">
+								<li><a href="#">Скидки для клиентов</a></li>
+								<li><a href="#">Скидки на заказы</a></li>
+								<li><a href="#">Скидки на товары</a></li>
+							</ul>
+						</li>
+
+						<li><a href="#">Реестр заказов</a></li>   
+					</ul> 
+
+					<form>
+						<img src="images/search.png" alt="Поиск по таблицам базы данных" class="search_img">
+						<input type="text" placeholder="Что ищем?" class="radius" name="search">
+					</form>
+				</div>
+			</div>
+
+			<div id="sidebar">
+				<ul>
+					<li><a href="#" class='userData'>Данные о клиенте</a></li>
+					<li><a href="#" class='account'>Учетная запись</a></li>
+					<li><a href="#" class='cart'>Корзина</a></li>
+					<li><a href="#" class='order'>Заказ</a></li>
+					<li><a href="#" class='productsGroup'>Группа товаров</a></li>
+					<li><a href="#" class='product'>Товар</a></li>
+					<li><a href="#" class='discount'>Скидка</a></li>
+					<li><a href="#" class='storage'>Склад</a></li>
+					<li><a href="#" class='orderForStorage'>Заказ для склада</a></li>
+					<li><a href="#" class='allOrders'>Общий реестр заказов</a></li>
+				</ul>
+			</div>
+
+			<div id="info"> </div>
+			<div id="info2"> </div>
+			
+			<!-- <div class="popupAutorisation">
+				<div class="formToAutorisation">
+
+					<input type="hidden" id="deleteUserId" value=""/>
+					<div class="popup-form_row">
+
+						<label id="label" for="login">Логин:</label>
+						<input id="loginToAutorisation" class="text_edit" type="text" name="login" size="24" autofocus required> <br/>
+						<label id="label" for="password">Пароль:</label>
+						<input id="passwordToAutorisation" class="text_edit" type="text" name="password" size="23" autofocus required> <br/>
+						
+						<fieldset>
+						<input class='submitAutorisation' type="button" value="Войти" "/>
+						</fieldset>
+						
+					</div>
+				</div>
+			</div> -->
+
+		</div>
+		<script type="text/javascript" src="scripts/myscript.js"></script>
+	</body>
+</html>

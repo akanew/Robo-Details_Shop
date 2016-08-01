@@ -1,0 +1,31 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+	</head>
+	<?php
+		require 'connect.php'; 
+
+		$sql_select = "SELECT * FROM account";
+		$result = mysql_query($sql_select);
+		$arr_id=array();
+		$arr_fio=array();
+		$cycle=0;
+
+		while ($row = mysql_fetch_array($result)){
+			$arr_id[$cycle]=$row['account_id'];
+			$arr_login[$cycle]=$row['login'];
+			$cycle++;
+		}
+		$table .="<label id=\"label\" for=\"discountObject\">Назначение: </label>";
+		$table .="<select  id=\"discountObjects\" name=\"discountObject\">";
+		if($cycle) {
+					for ($i=0; $i<$cycle; $i++) {
+				$table .= "<option value=\"".$arr_id[$i]."\">".$arr_login[$i]."</option>";
+			}
+		}
+		else $table .= "<option>Отсутстувет</option>";
+		$table .= "</select>\n";
+		
+		echo $table;
+	?>
+</html>

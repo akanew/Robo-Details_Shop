@@ -1,0 +1,153 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+		<link rel="stylesheet" href="styles/style.css"  type="text/css">
+		<script type="text/javascript" src="scripts/jquery-1.10.2.min.js"></script>
+		<title>Панель администрирования</title>
+	</head>
+
+	<body>
+		<div id="content">
+			<h1>Сущность "Скидка"</h1>
+			
+			<div class="popupQuestionToDeleting">
+				<div class="questionToDeleting">
+					<p>Данные этой записи используются в других записях,<Br> Вы желаете удалить и их тоже?</p>
+					<input type="hidden" id="deleteDiscountId" value=""/>
+					<div class="popup-form_row">
+						<input type="button" id="deleteDiscountYes" value="Да"/>
+						<input type="button" id="deleteDiscountNo" value="Нет"/>
+						<input type="button" id="deleteCancel" value="Отмена"/>
+					</div>
+				</div>
+			</div>
+			
+			<div id="submenu" class="presents">
+				<ul>
+					<li><a href="#" id="BtnAdd">Добавить запись</a></li>
+					<li><a href="#" id="BtnSearch">Поиск записей</a></li>
+				</ul>
+			</div>
+			
+			<div id="formAdd">
+				<form id="users_add" action="scripts/insertDiscountData.php" method="post" name="forma">
+					<fieldset>
+						<label id="label" for="discountName">Название:</label>
+						<input id="text_edit" type="text" name="discountName" size="30" oninput="validateDiscountName(this)" autofocus required> <br/>
+						<label id="label" for="discountValue">Размер скидки:</label>
+						<input id="text_edit" type="text" name="discountValue" size="26" oninput="validateDiscountValue(this)" autofocus required> <br/>
+						<label id="label" for="discountType">Тип скидки:</label>
+						<select  id="discountType" name="discountType">
+							<option value="1">Скидки для клиентов</option>
+							<option value="2">Скидки на заказы</option>
+							<option value="3">Скидки на товары</option>
+						</select>
+
+						<div id="typeDiscount">
+						</div>
+						<label id="label" for="description">Описание:</label>
+						<input id="text_edit" type="text" name="description" size="30"  oninput="validateDiscountName(this)"> <br/>
+					</fieldset>
+
+					<fieldset>
+						<input id="submitAdd" type="submit" value="Добавить данные">
+					</fieldset>
+				</form>
+			</div>
+			
+			<div id="formFind">
+				<form id="searchUser" name="forma">
+					<fieldset>
+						<label id="label" for="discount">Название скидки:</label>
+						<input class='text_edit' type="text" name="discount" size="24"> <br/>
+						<label id="label" for="discountValue">Размер скидки (%):</label>
+						<input class='text_edit' type="text" name="discountValue" size="22"> <br/>
+						<label id="label" for="type">Тип:</label>
+						<input class='text_edit' type="text" name="type" size="36"> <br/>
+						<label id="label" for="discountObject">Объект скидки:</label>
+						<input class='text_edit' type="text" name="discountObject" size="26"> <br/>
+					</fieldset>
+
+					<fieldset>
+						<input id="submitSearch" type="button" value="Найти записи" onClick="searchUserData();"/>
+					</fieldset>
+				</form>
+			</div>
+			
+			<input type="hidden" id="discountId" value=""/>
+			
+			<?php
+				require 'scripts/connect.php';
+				
+				$sql_select = "SELECT * FROM discount";
+				$result = mysql_query($sql_select);
+				$numberRow = 1;
+				$cycle=0;
+				$override_id=0;
+
+				$table = "<table class='table3' border=0 width=90% cellspacing = 0 align=center>\n";
+	 
+				$table .= "<tr>\n";
+					$table .= "<th class='table_font'>Название</th>\n";
+					$table .= "<th class='table_font'>Размер скидки</th>\n";
+					$table .= "<th class='table_font'>Тип</th>\n";
+					$table .= "<th class='table_font'>Назначение</th>\n";
+					$table .= "<th class='table_font'>Описание</th>\n";
+					$table .= "<th class='table_font'>Опции</th>\n";
+				$table .= "</tr>\n";
+	  
+				while ($row = mysql_fetch_array($result)){
+					$override_id=$row['discount_id'];
+					
+					$table .= "<td class='table3td'>".(($row['name'])? $row['name'] : 'Отсутствует')."</td>\n";
+					$table .= "<td class='table3td'>".(($row['percent'])? ($row['percent'].' %') : 'Отсутствует')."</td>\n";
+					if($row['type']==1) $table .= "<td class='table3td'>".'Скидка для покупателя'."</td>\n";
+					else if($row['type']==2) $table .= "<td class='table3td'>".'Скидка на заказ'."</td>\n";
+					else if($row['type']==3) $table .= "<td class='table3td'>".'Скидка на товар'."</td>\n";
+					else $table .= "<td class='table3td'>".'Отсутствует'."</td>\n";
+					
+					if($row['type']==1) {
+						$temp=$row['discount_record_id'];
+						$sql_select_account = "SELECT * FROM `account` WHERE account_id=$temp";
+						$result_account = mysql_query($sql_select_account);
+						$row_account = mysql_fetch_array($result_account);
+						
+						if($row_account) $table .= "<td class='table3td'>".$row_account['login']."</td>\n";
+						else  $table .= "<td class='table3td'>".'Отсутствует'."</td>\n";
+					}
+					else if($row['type']==2) {
+						if($row_account) $table .= "<td class='table3td'>Заказ №".$row['discount_record_id']."</td>\n";
+						else  $table .= "<td class='table3td'>".'Отсутствует'."</td>\n";
+					}
+					else if($row['type']==3) {
+						$temp=$row['discount_record_id'];
+						$sql_select_product = "SELECT * FROM `product` WHERE product_id=$temp";
+						$result_product = mysql_query($sql_select_product);
+						$row_product = mysql_fetch_array($result_product);
+						
+						if($row_product) $table .= "<td class='table3td'>".$row_product['name']."</td>\n";
+						else  $table .= "<td class='table3td'>".'Отсутствует'."</td>\n";
+					}
+					else $table .= "<td class='table3td'>".'Отсутствует'."</td>\n";
+					
+					$table .= "<td class='table3td'>".(($row['description'])? $row['description'] : 'Отсутствует')."</td>\n";
+					
+					$table .= "<td class='table3td'>
+					<a class='options discountShow' data-id='\"$override_id\"' href=\"#\">Посмотреть</a>\n
+					<a class='options discountEdit' data-id='\"$override_id\"' href=\"#\">Редактировать</a>\n
+					<a class='options discountDelete' data-id='\"$override_id\"' href=\"#\">Удалить</a>
+					</td>";
+					$table .= "</tr>\n";
+					$numberRow++;
+					$cycle++;
+				}
+				
+				$table .= "</table>\n";
+				if($cycle) echo $table;
+				else echo 'К сожалению текущая таблица ещё не заполнена. Вы можете добавить записи воспользовавшись соответствующей кнопкой.';
+			?>
+			
+		</div>
+		<script type="text/javascript" src="scripts/myscript.js"></script>
+	</body>
+</html>

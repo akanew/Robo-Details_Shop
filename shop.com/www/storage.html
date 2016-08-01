@@ -1,0 +1,158 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+		<link rel="stylesheet" href="styles/style.css"  type="text/css">
+		<script type="text/javascript" src="scripts/jquery-1.10.2.min.js"></script>
+		<title>Панель администрирования</title>
+	</head>
+
+	<body>
+		<div id="content">
+			<h1>Сущность "Склад"</h1>
+			
+			<div class="popupQuestionToDeleting">
+				<div class="questionToDeleting">
+					<p>К данным склада привязана запись магазина ("Группа товаров"), удалить её?</p>
+					<input type="hidden" id="deleteStorageId" value=""/>
+					<div class="popup-form_row">
+						<input type="button" id="deleteYesStorage" value="Да"/>
+						<input type="button" id="deleteNoStorage" value="Нет"/>
+						<input type="button" id="deleteCancelStorage" value="Отмена"/>
+					</div>
+				</div>
+			</div>
+			
+			<div id="submenu" class="presents">
+				<ul>
+					<li><a href="#" id="BtnAdd">Добавить запись</a></li>
+					<li><a href="#" id="BtnSearch">Поиск записей</a></li>
+				</ul>
+			</div>
+			
+			<div id="formAdd">
+				<form id="users_add" action="scripts/insertStorage.php" method="post" name="forma">
+					<fieldset>
+						<label id="label" for="productName">Название:</label>
+						<input id="text_edit" type="text" name="productName" size="30" > <br/>
+												
+						<label id="label" for="user">Список товаров:</label> <br/>
+						<?php
+							require 'scripts/connect.php';
+				 
+							$sql_select = "SELECT * FROM product";
+							$result = mysql_query($sql_select);
+							$arr_id=array();
+							$arr_product=array();
+							$cycle=0;
+				 
+							while ($row = mysql_fetch_array($result)){
+								$arr_id[$cycle]=$row['product_id'];
+								$arr_product[$cycle]=$row['name'];
+								$cycle++;
+							}
+							
+							$table = "<select class='multipleSelect' name=\"products[]\" multiple>";
+							for ($i=0; $i<$cycle; $i++) {
+								$table .= "<option value=\"".$arr_id[$i]."\">".$arr_product[$i]."</option>";
+							}
+							$table .= "</select>\n</br>";
+							
+							echo $table;
+						?>
+						
+						<label id="label" for="countProducts">Список количества продуктов:</label>
+						<input id="text_edit" type="text" name="countProducts" size="12" > <br/>
+						
+					</fieldset>
+
+					<fieldset>
+						<input id="submitAdd" type="submit" value="Добавить данные">
+					</fieldset>
+				</form>
+			</div>
+			
+			<div id="formFind">
+				<form id="searchStorage" name="forma">
+					<fieldset>
+						<label id="label" for="storage">Название склада:</label>
+						<input id="storageSearch" class='text_edit' type="text" name="storage" size="24"> <br/>
+						<label id="label" for="productsList">Список товаров:</label>
+						<input id="productsListSearch" class='text_edit' type="text" name="productsList" size="25"> <br/>
+					</fieldset>
+
+					<fieldset>
+						<input id="submitSearch" type="button" value="Найти записи" onClick="searchStorage();"/>
+					</fieldset>
+				</form>
+			</div>
+			
+			<?php
+				require 'scripts/connect.php';
+				
+				$sql_select = "SELECT * FROM storage";
+				$result = mysql_query($sql_select);
+				$numberRow = 1;
+				$override_id=0;
+				$cycle=0;
+				
+				$table = "<table class='table3' border=0 width=90% cellspacing = 0 align=center>\n";
+	 
+				$table .= "<tr>\n";
+					$table .= "<th class='table_font'>Название</th>\n";
+					$table .= "<th class='table_font'>Список товаров</th>\n";
+					$table .= "<th class='table_font'>Список количества товаров</th>\n";
+					$table .= "<th class='table_font'>Опции</th>\n";
+				$table .= "</tr>\n";
+				
+				while ($row = mysql_fetch_array($result)){
+					$override_id=$row['storage_id'];
+					
+					$table .= "<td class='table3td'>".(($row['name'])? $row['name'] : 'Отсутствует')."</td>\n";
+					
+					$array_products_id=$row['array_products_id'];
+					$productId = explode(', ', $array_products_id);
+					$count=count($productId);
+					$table .= "<td class='table3td'><select id=\"array_products_id\">";
+					for($i=0;$i<$count;$i++) {
+						$sql_select_userData = "SELECT * FROM product WHERE product_id=$productId[$i]";
+						$result_userData = mysql_query($sql_select_userData);
+						$row_userData = mysql_fetch_array($result_userData);
+						
+						if($row_userData) {
+							$table .= "<option value=\"".$i."\">".($i+1).". ".(($productId[$i])? ($row_userData['name']) : '0')."</option>";
+						}
+						else $table .= "<p>".'Отсутствует'."</p>"."</td>\n";
+					}
+					$table .= "</select>\n";
+					$table .= "</td>\n";
+					
+					$array_products_count=$row['array_products_count'];
+					$productCount = explode(', ', $array_products_count);
+					$count=count($productId);
+					$table .= "<td class='table3td'><select id=\"array_products_count\">";
+					for($i=0;$i<$count;$i++) {
+						$table .= "<option value=\"".$i."\">".($i+1).". ".(($productCount[$i])? $productCount[$i] : '0')." шт.</option>";
+					}
+					$table .= "</select>\n";
+					$table .= "</td>\n";
+					
+					$table .= "<td class='table3td'>
+					<a class='options storageShow' data-id='\"$override_id\"' href=\"#\">Посмотреть</a>\n
+					<a class='options storageEdit' data-id='\"$override_id\"' href=\"#\">Редактировать</a>\n
+					<a class='options storageDelete' data-id='\"$override_id\"' href=\"#\">Удалить</a>
+					</td>";
+					
+					$table .= "</tr>\n";
+					$numberRow++;
+					$cycle++;
+				}
+				
+				$table .= "</table>\n";
+				if($cycle) echo $table;
+				else echo 'К сожалению текущая таблица ещё не заполнена. Вы можете добавить записи воспользовавшись соответствующей кнопкой.';
+			?>					
+		</div>
+					
+		<script type="text/javascript" src="scripts/myscript.js"></script>
+	</body>
+</html>

@@ -1,0 +1,153 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+		<link rel="stylesheet" href="styles/style.css"  type="text/css">
+		<script type="text/javascript" src="scripts/jquery-1.10.2.min.js"></script>
+		<title>Панель администрирования</title>
+	</head>
+
+	<body>
+		<div id="content">
+			<h1>Сущность "Товар"</h1>
+			
+			<div id="submenu" class="presents">
+				<ul>
+					<li><a href="#" id="BtnAdd">Добавить запись</a></li>
+					<li><a href="#" id="BtnSearch">Поиск записей</a></li>
+				</ul>
+			</div>
+			
+			<div id="formAdd">
+				<form id="users_add" action="scripts/insertProduct.php" method="post" name="forma">
+					<fieldset>
+						<label id="label" for="nameProduct">Наименование:</label>
+						<input id="text_edit" type="text" name="nameProduct" size="26"> <br/>
+						<label id="label" for="productGroup">Группа:</label>
+						<?php
+							require 'scripts/connect.php';
+				 
+							$sql_select = "SELECT * FROM products_group";
+							$result = mysql_query($sql_select);
+							$arr_id=array();
+							$arr_products_group=array();
+							$cycle=0;
+				 
+							while ($row = mysql_fetch_array($result)){
+								$arr_id[$cycle]=$row['products_group_id'];
+								$arr_products_group[$cycle]=$row['name'];
+								$cycle++;
+							}
+							
+							$table = "<select name=\"productGroup\" >";
+							for ($i=0; $i<$cycle; $i++) {
+								$table .= "<option value=\"".$arr_id[$i]."\">".$arr_products_group[$i]."</option>";
+							}
+							$table .= "</select></br>\n";
+							
+							echo $table;
+						?>
+						<label id="label" for="price">Цена:</label>
+						<input id="text_edit" type="text" name="price" size="34"> <br/>
+						<label id="label" for="count">Количество:</label>
+						<input id="text_edit" type="text" name="count" size="29"> <br/>
+						<label id="label" for="description">Описание:</label>
+						<input id="text_edit" type="text" name="description" size="30"> <br/>
+					</fieldset>
+
+					<fieldset>
+						<input id="submitAdd" type="submit" value="Добавить данные">
+					</fieldset>
+				</form>
+			</div>
+			
+			<div id="formFind">
+				<form id="searchUser" name="forma">
+					<fieldset>
+						<label id="label" for="product">Название товара:</label>
+						<input class='text_edit' type="text" name="product" size="24"> <br/>
+						<label id="label" for="productsGroup">Название групы:</label>
+						<input class='text_edit' type="text" name="productsGroup" size="24"> <br/>
+						<label id="label" for="price">Цена:</label>
+						<input class='text_edit' type="text" name="price" size="34"> <br/>
+						<label id="label" for="discount">Скидка:</label>
+						<input class='text_edit' type="text" name="discount" size="32"> <br/>						
+					</fieldset>
+
+					<fieldset>
+						<input id="submitSearch" type="button" value="Найти записи" onClick="searchUserData();"/>
+					</fieldset>
+				</form>
+			</div>
+			
+			<?php
+				require 'scripts/connect.php';
+				
+				$sql_select = "SELECT * FROM product";
+				$result = mysql_query($sql_select);
+				$numberRow = 1;
+				$override_id=0;
+				$cycle=0;
+				
+				$table = "<table class='table3' border=0 width=90% cellspacing = 0 align=center>\n";
+	 
+				$table .= "<tr>\n";
+					$table .= "<th class='table_font'>Наименование</th>\n";
+					$table .= "<th class='table_font'>Группа</th>\n";
+					$table .= "<th class='table_font'>Цена</th>\n";
+					$table .= "<th class='table_font'>Количество</th>\n";
+					$table .= "<th class='table_font'>Описание</th>\n";
+					$table .= "<th class='table_font'>Скидка</th>\n";
+					$table .= "<th class='table_font'>Опции</th>\n";
+				$table .= "</tr>\n";
+
+				while ($row = mysql_fetch_array($result)){
+					$override_id=$row['product_id'];
+					$override_id .= '|'.$row['products_group_id'];
+					$override_id .= '|'.$row['discount_id'];
+					
+					$table .= "<td class='table3td'>".(($row['name'])? $row['name'] : 'Отсутствует')."</td>\n";
+					///////////////
+					$table .= "<td class='table3td'>";
+					$productsGroupId=$row['products_group_id'];
+					
+					$sql_select_products_group = "SELECT * FROM products_group WHERE products_group_id=$productsGroupId";
+					$result_products_group = mysql_query($sql_select_products_group);
+					$row_products_group = mysql_fetch_array($result_products_group);
+					
+					if($row_products_group) $table .= "<a class='options productsGroupShow' data-id='\"$productsGroupId\"' href=\"#\">".$row_products_group['name']."</a></td>\n";
+					else $table .= "<p>".'Отсутствует'."</p>"."</td>\n";
+					
+					$table .= "<td class='table3td'>".(($row['price'])? ($row['price'].' руб.') : 'Отсутствует')."</td>\n";
+					$table .= "<td class='table3td'>".(($row['count'])? ($row['count'].' шт.') : 'Отсутствует')."</td>\n";
+					$table .= "<td class='table3td'>".(($row['description'])? $row['description'] : 'Отсутствует')."</td>\n";
+					
+					$table .= "<td class='table3td'>";
+					$discountId=$row['discount_id'];
+					
+					$sql_select_discount = "SELECT * FROM discount WHERE discount_id=$discountId";
+					$result_discount = mysql_query($sql_select_discount);
+					$row_discount = mysql_fetch_array($result_discount);
+					
+					if($row_discount) $table .= "<a class='options discountShow' data-id='\"$discountId\"' href=\"#\">".$row_discount['name']."</a></td>\n";
+					else $table .= "<p>".'Отсутствует'."</p>"."</td>\n";
+					
+					$table .= "<td class='table3td'>
+					<a class='options productShow' data-id='\"$override_id\"' href=\"#\">Посмотреть</a>\n
+					<a class='options productEdit' data-id='\"$override_id\"' href=\"#\">Редактировать</a>\n
+					<a class='options productDelete' data-id='\"$override_id\"' href=\"#\">Удалить</a>
+					</td>";
+				
+					$table .= "</tr>\n";
+					$numberRow++;
+					$cycle++;
+				}
+				
+				$table .= "</table>\n";
+				if($cycle) echo $table;
+				else echo 'К сожалению текущая таблица ещё не заполнена. Вы можете добавить записи воспользовавшись соответствующей кнопкой.';
+			?>				
+			
+		</div>
+		<script type="text/javascript" src="scripts/myscript.js"></script>
+	</body>
+</html>

@@ -1,0 +1,137 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+		<link rel="stylesheet" href="styles/style.css"  type="text/css">
+		<script type="text/javascript" src="scripts/jquery-1.10.2.min.js"></script>
+		<title>Панель администрирования</title>
+	</head>
+
+	<body>
+		<div id="content">
+			<h1>Сущность "Общий реестр заказов"</h1>
+			
+			<div id="submenuShort" class='presents'>
+				<ul>
+					<li><a href="#" id="BtnSearch">Поиск записей</a></li>
+				</ul>
+			</div>
+			
+			<div id="formFind">
+				<form id="searchUser" name="forma">
+					<fieldset>
+						<label id="label" for="order">Заказ:</label>
+						<input class='text_edit' type="text" name="order" size="34"> <br/>
+						<label id="label" for="account">Клиент:</label>
+						<input class='text_edit' type="text" name="account" size="33"> <br/>
+						<label id="label" for="price">Стоимость:</label>
+						<input class='text_edit' type="text" name="price" size="30"> <br/>
+						<label id="label" for="status">Статус:</label>
+						<input class='text_edit' type="text" name="status" size="33"> <br/>
+					</fieldset>
+
+					<fieldset>
+						<input id="submitSearch" type="button" value="Найти записи" onClick="searchUserData();"/>
+					</fieldset>
+				</form>
+			</div>
+			
+			<?php
+				require 'scripts/connect.php';
+	 
+				$sql_select = "SELECT * FROM all_order";
+				$result = mysql_query($sql_select);
+				$numberRow = 1;
+				$override_id=0;
+				$cycle=0;
+				
+				$table = "<table class='table3' border=0 width=90% cellspacing = 0 align=center>\n";
+	 
+				$table .= "<tr>\n";
+					$table .= "<th class='table_font'>Заказ</th>\n";
+					$table .= "<th class='table_font'>Клиент</th>\n";
+					$table .= "<th class='table_font'>Стоимость</th>\n";
+					$table .= "<th class='table_font'>Статус</th>\n";
+					$table .= "<th class='table_font'>Опции</th>\n";
+				$table .= "</tr>\n";
+				
+				while ($row = mysql_fetch_array($result)){
+					$override_id=$row['order_id'];
+					
+					$orderDataId=$row['order_id'];
+					$table .= "<td class='table3td'>";
+					//$table .= "<td class='table3td'>".(($row['order_id'])? ('Заказ №'.$row['order_id']) : 'Отсутствует')."</td>\n";
+					$table .= "<a class='options orderShow' data-id='\"$orderDataId\"' href=\"#\">Заказ № ".$orderDataId."</a></td>\n";
+					
+					
+					
+					$sql_select_order = "SELECT * FROM `order` WHERE order_id=$orderDataId";
+					$result_order = mysql_query($sql_select_order);
+					$row_order = mysql_fetch_array($result_order);
+					
+					$accountDataId=$row_order['account_id'];
+					
+					$sql_select_account = "SELECT * FROM account WHERE account_id=$accountDataId";
+					$result_account = mysql_query($sql_select_account);
+					$row_account = mysql_fetch_array($result_account);
+					
+					$table .= "<td class='table3td'>".(($row_account)? $row_account['login'] : 'Отсутствует')."</td>\n";
+					
+					$totalPrice=0;
+					$flag=false;
+					$cartDataId=$row_order['cart_id'];
+					
+					if($row_order['cart_id'] && $flag==false) {
+					
+						$sql_select_cart = "SELECT * FROM cart WHERE cart_id=$cartDataId";
+						$result_cart = mysql_query($sql_select_cart);
+						$row_cart = mysql_fetch_array($result_cart);
+					
+						//Количество товаров
+						$array_products_count=$row_cart['array_producrs_count'];
+						$productCount = explode(', ', $array_products_count);
+						$count=count($productCount);
+					
+						//Цена товаров
+						$array_products_id=$row_cart['array_products_id'];
+						$productId = explode(', ', $array_products_id);
+					
+						for($i=0;(($i<$count) && ($flag==false));$i++) {
+							$sql_select_product = "SELECT * FROM `product` WHERE product_id=$productId[$i]";
+							$result_product = mysql_query($sql_select_product);
+							$row_product = mysql_fetch_array($result_product);
+						
+							if($row_product) {
+								$totalPrice += $row_product['price']*$productCount[$i];							
+							}
+							else $flag=true;
+						}
+					}
+					
+					$discountDataId=$row_order['discount_id'];
+					
+					$sql_select_discount = "SELECT * FROM discount WHERE discount_id=$discountDataId";
+					$result_discount = mysql_query($sql_select_discount);
+					$row_discount = mysql_fetch_array($result_discount);
+					
+					$table .= "<td class='table3td'>".(($row_discount['percent'])? (($totalPrice-(($row_discount['percent']/100)*$totalPrice)).' руб.') : $totalPrice.' .руб')."</td>\n";
+					
+					
+					$table .= "<td class='table3td'>".(($row['active'])? 'Реализован' : 'В процессе')."</td>\n";
+					
+					$table .= "<td class='table3td'>
+					<a class='options orderShow' data-id='\"$override_id\"' href=\"#\">Посмотреть</a>\n
+					</td>";
+					$table .= "</tr>\n";
+					$numberRow++;
+					$cycle++;
+				}
+				
+				$table .= "</table>\n";
+				if($cycle) echo $table;
+				else echo 'К сожалению текущая таблица ещё не заполнена. Вы можете добавить записи воспользовавшись соответствующей кнопкой.';
+			?>
+			
+		</div>
+		<script type="text/javascript" src="scripts/myscript.js"></script>
+	</body>
+</html>

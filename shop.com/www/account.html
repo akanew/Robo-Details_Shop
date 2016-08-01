@@ -1,0 +1,170 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+		<link rel="stylesheet" href="styles/style.css"  type="text/css">
+		<script type="text/javascript" src="scripts/jquery-1.10.2.min.js"></script>
+		<title>Панель администрирования</title>
+	</head>
+
+	<body>
+		<div id="content">
+			<h1>Сущность "Учётная запись"</h1>
+			
+			<div id="submenu" class="presents">
+				<ul>
+					<li><a href="#" id="BtnAdd">Добавить запись</a></li>
+					<li><a href="#" id="BtnSearch">Поиск записей</a></li>
+				</ul>
+			</div>
+			
+			<div id="formAdd">
+				<form id="users_add" action="scripts/insertAccount.php" method="post" name="forma">
+					<fieldset>
+						<label id="label" for="login">Логин:</label>
+						<input id="text_edit" type="text" name="login" size="34"> <br/>
+						<label id="label" for="password">Пароль:</label>
+						<input id="text_edit" type="text" name="password" size="30"> <br/>
+						<label id="label" for="user">Пользователь:</label> 
+						<?php
+							require 'scripts/connect.php';
+				 
+							$sql_select = "SELECT * FROM user_data";
+							$result = mysql_query($sql_select);
+							$arr_id=array();
+							$arr_fio=array();
+							$cycle=0;
+				 
+							while ($row = mysql_fetch_array($result)){
+								$arr_id[$cycle]=$row['user_id'];
+								$arr_fio[$cycle]=$row['fio'];
+								$cycle++;
+							}
+							
+							$table = "<select name=\"user\" >";
+							for ($i=0; $i<$cycle; $i++) {
+								$table .= "<option value=\"".$arr_id[$i]."\">".$arr_fio[$i]."</option>";
+							}
+							$table .= "</select>\n";
+							
+							echo $table;
+						?>
+					</fieldset>
+
+					<fieldset>
+						<input id="submitAdd" type="submit" value="Добавить данные">
+					</fieldset>
+				</form>
+			</div>
+			
+			<div id="formFind">
+				<form id="searchAccount" name="forma">
+					<fieldset>
+						<label id="label" for="fio">Пользователь:</label>
+						<input id="fioSearch" class='text_edit' type="text" name="fio" size="26"> <br/>
+						<label id="label" for="login">Логин:</label>
+						<input id="loginSearch" class='text_edit' type="text" name="login" size="33"> <br/>
+						<label id="label" for="orderList">Список заказов:</label>
+						<input id="orderListSearch" class='text_edit' type="text" name="orderList" size="25"> <br/>
+						<label id="label" for="discount">Скидка:</label>
+						<input id="discountSearch" class='text_edit' type="text" name="discount" size="32"> <br/>
+						<label id="label" for="cart">Корзина:</label>
+						<input id="cartSearch" class='text_edit' type="text" name="cart" size="31"> <br/>
+					</fieldset>
+
+					<fieldset>
+						<input id="submitSearch" type="button" value="Найти записи" onClick="searchAccount();"/>
+					</fieldset>
+				</form>
+			</div>
+			
+			<?php
+				require 'scripts/connect.php';
+				
+				$sql_select = "SELECT * FROM account";
+				$result = mysql_query($sql_select);
+				$numberRow = 1;
+				$override_id=0;
+				$cycle=0;
+				
+				$table = "<table class='table3' border=0 width=90% cellspacing = 0 align=center>\n";
+	 
+				$table .= "<tr>\n";
+					$table .= "<th class='table_font'>Пользователь</th>\n";
+					$table .= "<th class='table_font'>Логин</th>\n";
+					$table .= "<th class='table_font'>Пароль</th>\n";
+					$table .= "<th class='table_font'>Список заказов</th>\n";
+					$table .= "<th class='table_font'>Скидка для пользователя</th>\n";
+					$table .= "<th class='table_font'>Корзина</th>\n";
+					$table .= "<th class='table_font'>Опции</th>\n";
+				$table .= "</tr>\n";
+
+				while ($row = mysql_fetch_array($result)){
+					$override_id=$row['account_id'];
+					$override_id .= '|'.$row['user_id'];
+					$override_id .= '|'.$row['cart_id'];
+					$override_id .= '|'.$row['discount_id'];
+					
+					$table .= "<td class='table3td'>";
+					$userDataId=$row['user_id'];
+					
+					$sql_select_userData = "SELECT * FROM user_data WHERE user_id=$userDataId";
+					$result_userData = mysql_query($sql_select_userData);
+					$row_userData = mysql_fetch_array($result_userData);
+					
+					if($row_userData) $table .= "<a class='options tableShow' data-id='\"$userDataId\"' href=\"#\">".$row_userData['fio']."</a></td>\n";
+					else $table .= "<p>".'Отсутствует'."</p>"."</td>\n"; 
+					
+					$table .= "<td class='table3td'>".(($row['login'])? $row['login'] : 'Отсутствует')."</td>\n";
+					$table .= "<td class='table3td'>".(($row['password'])? str_pad($str, strlen($row['password']) , "*") : 'Отсутствует')."</td>\n";
+					
+					$arrayOrdersId=$row['array_records_id'];
+					$OrdersId = explode(', ', $arrayOrdersId);
+					$count=count($OrdersId);
+					$table .= "<td class='table3td'><select>";
+					for($i=0;$i<$count;$i++) {
+						$table .= "<option>".(($OrdersId[$i])? ("Заказ №".$OrdersId[$i]) : "Отсутствует")."</option>";
+						
+					}
+					$table .= "</select>\n";
+					$table .= "</td>\n";
+					
+					$table .= "<td class='table3td'>";
+					$userDataId=$row['discount_id'];
+					
+					$sql_select_discount = "SELECT * FROM discount WHERE discount_id=$userDataId";
+					$result_discount = mysql_query($sql_select_discount);
+					$row_discount = mysql_fetch_array($result_discount);
+					
+					if($row_discount) $table .= "<a class='options discountShow' data-id='\"$userDataId\"' href=\"#\">".$row_discount['name']."</a></td>\n";
+					else $table .= "<p>".'Отсутствует'."</p>"."</td>\n";
+					
+					$table .= "<td class='table3td'>";
+					$cartId=$row['cart_id'];
+					
+					$sql_select_cart = "SELECT * FROM cart WHERE cart_id=$cartId";
+					$result_cart = mysql_query($sql_select_cart);
+					$row_cart = mysql_fetch_array($result_cart);
+					
+					if($row_cart) $table .= "<a class='options cartShow' data-id='\"$cartId\"' href=\"#\">Корзина №".$row_cart['cart_id']."</a></td>\n";
+					else $table .= "<p>".'Отсутствует'."</p>"."</td>\n";
+					//$table .= "<td class='table3td'>".(($row['cart_id'])? 'Корзина №'.$row['cart_id'] : 'Отсутствует')."</td>\n";
+					$table .= "<td class='table3td'>
+						<a class='options accountShow' data-id='\"$override_id\"' href=\"#\">Посмотреть</a>\n
+						<a class='options accountEdit' data-id='\"$override_id\"' href=\"#\">Редактировать</a>\n
+						<a class='options accountDelete' data-id='\"$override_id\"' href=\"#\">Удалить</a>
+					</td>";
+					$table .= "</tr>\n";
+					$numberRow++;
+					$cycle++;
+				}
+				
+				$table .= "</table>\n";
+				
+				if($cycle) echo $table;
+				else echo 'К сожалению текущая таблица ещё не заполнена. Вы можете добавить записи воспользовавшись соответствующей кнопкой.';
+			?>
+			
+		</div>
+		<script type="text/javascript" src="scripts/myscript.js"></script>
+	</body>
+</html>
